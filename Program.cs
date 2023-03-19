@@ -24,11 +24,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ExchangeRateService>();
 
-
-
-// builder.Services.AddDbContext<WeatherContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -52,7 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHangfireDashboard();
-RecurringJob.AddOrUpdate<ExchangeRateService>("ExchangeRateService.UpdateExchangeRates", x => x.UpdateExchangeRates(), Cron.Minutely());
+RecurringJob.AddOrUpdate<ExchangeRateService>("ExchangeRateService.UpdateExchangeRates", x => x.UpdateExchangeRates(), Cron.Daily());
 
 app.UseCors(MyAllowSpecificOrigins);
 

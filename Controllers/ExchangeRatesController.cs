@@ -17,7 +17,11 @@ namespace dot.Controllers
         [HttpGet]
         public IActionResult GetExchangeRates()
         {
-            var exchangeRates = _exchangeRateService.GetExchangeRates();
+            var exchangeRates = _exchangeRateService.GetExchangeRatesForToday();
+            if (exchangeRates == null || exchangeRates.Count == 0)
+            {
+                return NotFound();
+            }
             return Ok(exchangeRates);
         }
     }

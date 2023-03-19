@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using dot.Data;
 using dot.Models;
-using System.Collections;
 using System.Globalization;
 
 
@@ -23,7 +17,6 @@ namespace dot.Services
 
         public async Task UpdateExchangeRates()
         {
-            // Retrieve exchange rates from an open source API (for example, ExchangeRatesAPI)
             string apiUrl = "https://open.er-api.com/v6/latest/USD";
             using (var httpClient = new HttpClient())
             {
@@ -37,16 +30,15 @@ namespace dot.Services
                     };
                     var exchangeRates = JsonSerializer.Deserialize<ExchangeRateApiResponseDto>(json, options);
 
-                    // Save the exchange rates to the database using Entity Framework Core
                     var existingRates = _context.ExchangeRates.ToList();
                     var now = DateTime.Now;
+                    string format = "ddd, dd MMM yyyy HH:mm:ss zzz";
+                    DateTime date = DateTime.ParseExact(exchangeRates.time_last_update_utc, format, CultureInfo.InvariantCulture).ToUniversalTime();
 
                     foreach (KeyValuePair<string, decimal> rate in exchangeRates.Rates)
                     {
                         string currencyCode = rate.Key;
                         decimal rateValue = rate.Value;
-                        string format = "ddd, dd MMM yyyy HH:mm:ss zzz";
-                        DateTime date = DateTime.ParseExact(exchangeRates.time_last_update_utc, format, CultureInfo.InvariantCulture).ToUniversalTime();
                         var existingRate = existingRates.FirstOrDefault(r => r.Timestamp == date);
                         if (existingRate == null)
                         {
@@ -76,9 +68,20 @@ namespace dot.Services
         }
 
 
-        public List<ExchangeRate> GetExchangeRates()
+        // public List<ExchangeRate> GetExchangeRates()
+        // {
+        //     return _context.ExchangeRates.ToList();
+        // }
+
+        public List<ExchangeRate> GetExchangeRatesForToday()
         {
-            return _context.ExchangeRates.ToList();
+            DateTime today = DateTime.UtcNow.Date;
+            return _context.ExchangeRates.Where(x => (
+                x.Timestamp.Day == today.Day &&
+                x.Timestamp.Month == today.Month &&
+                x.Timestamp.Year == today.Year
+            )).ToList();
         }
+
     }
 }
